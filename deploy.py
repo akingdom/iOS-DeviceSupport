@@ -12,7 +12,7 @@ def unzip_file(name, target):
   zip_ref.extractall(target)
   zip_ref.close()
 
-def process(xcode, version):
+def process(xcode, version, listing):
   target = path.join(xcode, DEVICE_SUPPORT_PATH)
   exist = listdir(target)
   all_files = [i.replace('.zip', '') for i in listdir(SRC) if i.endswith('.zip')]
@@ -21,10 +21,15 @@ def process(xcode, version):
   if version:
       new_files = list(filter(lambda x : version in x, new_files))
 
-  for i in new_files:
-    print 'Unzip file "{}.zip" to {}'.format(i, target)
-    unzip_file(i, target)
-  print '\nUpdate successfully for {}'.format(xcode)
+  if listing==True:
+    for i in new_files:
+      print ('LIST| file "{}.zip" to {}'.format(i, target))
+    print ('\nNo files were copied for {}'.format(xcode))
+  else:
+    for i in new_files:
+      print ('Unzip file "{}.zip" to {}'.format(i, target))
+      unzip_file(i, target)
+    print ('\nUpdate successfully for {}'.format(xcode))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
@@ -42,5 +47,13 @@ if __name__ == '__main__':
     default=None,
     help='Specific version (default is all)'
   )
+  parser.add_argument(
+    '-l',
+    type=str,
+    nargs='?',
+    dest='listing',
+    default=argparse.SUPPRESS,
+    help='List only without copying any files (default is to copy)'
+  )
   args = parser.parse_args()
-  process(args.target, args.version)
+  process(args.target, args.version, 'listing' in args)
